@@ -1,8 +1,16 @@
 import React from 'react'
+import { Route } from 'react-router-dom'
 
 function Welcome() {
   return (
-  <h1>Welcome page</h1>
+    <section>
+<h1>Welcome page</h1>
+<Route path='/welcome/new-user'>
+<p>Welcome new user</p>
+</Route>
+
+    </section>
+  
   )
 }
 
