@@ -1,40 +1,53 @@
-import React from 'react'
-import { useParams , Route , Link } from 'react-router-dom'
+import React, { useEffect } from 'react'
+import { useParams , Route , Link , useRouteMatch } from 'react-router-dom'
 import HighlightedQuote from '../components/quotes/HighlightedQuote'
 
+
 import Comments from '../components/comments/Comments'
+import useHttp from '../components/hooks/use-http'
+import { getSingleQuote } from '../components/lib/api'
+import LoadingSpinner from '../components/UI/LoadingSpinner'
 
 
-const DUMMY_QUOTES = [
-    {
-        id:'q1' , 
-        author: 'max' , 
-        text : 'Learning react'
-    } ,
-    {
-        id:'q2' , 
-        author: 'vicky' , 
-        text : 'Learning react'
-    }
-]
+
 
 function QuoteDetail() {
+    const match = useRouteMatch()
     const params =  useParams();
-    const quote = DUMMY_QUOTES.find(quote => quote.id === params.quoteId )
+   
 
-    if(!quote) {
+    const {quoteId } = params;
+    const {sendRequest , status, data: loadedQuote , error} = useHttp(getSingleQuote, true)
+
+    useEffect (() => {
+        sendRequest(quoteId)
+    } , [sendRequest , quoteId])
+
+    if (status === 'pending') {
+        return <div className='centered' >
+          <LoadingSpinner/>
+        </div>
+       }
+       if (status === 'error') {
+        return <p className='centered focused' >
+          {error}
+        </p>
+       }
+    
+
+    if(!loadedQuote.text) {
         return <p>No quote found</p>
     }
   return (
     <div>
-    <HighlightedQuote text = {quote.text} author = {quote.author} />
-    <Route path={`/quotes/${params.quoteId}`} exact>
+    <HighlightedQuote text = {loadedQuote.text} author = {loadedQuote.author} />
+    <Route path={`${match.path}`} exact>
     <div className='centered'>
-        <Link className='btn--flat' to= {`/quotes/${params.quoteId}/comments`}>Load Comments</Link> 
+        <Link className='btn--flat' to= {`${match.url}/comments`}>Load Comments</Link> 
      </div>
     </Route>
     
-    <Route path={`/quotes/${params.quoteId}/comments`}>
+    <Route path={`${match.path}/comments`}>
         <Comments/>
     </Route>
     </div>
